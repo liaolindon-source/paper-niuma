@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { UploadCloud, File, X } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { File, UploadCloud, X } from 'lucide-react';
 import './FileUpload.css';
 
 const FileUpload = ({ accept, onUpload, label, description }) => {
@@ -7,54 +7,46 @@ const FileUpload = ({ accept, onUpload, label, description }) => {
   const [file, setFile] = useState(null);
   const inputRef = useRef(null);
 
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
+  const handleDrag = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setDragActive(event.type === 'dragenter' || event.type === 'dragover');
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDrop = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
+    if (event.dataTransfer.files?.[0]) {
+      handleFile(event.dataTransfer.files[0]);
     }
   };
 
-  const handleChange = (e) => {
-    e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
+  const handleChange = (event) => {
+    event.preventDefault();
+    if (event.target.files?.[0]) {
+      handleFile(event.target.files[0]);
     }
   };
 
-  const handleFile = (file) => {
-    setFile(file);
-    if (onUpload) {
-      onUpload(file);
-    }
+  const handleFile = (nextFile) => {
+    setFile(nextFile);
+    onUpload?.(nextFile);
   };
 
-  const clearFile = (e) => {
-    e.stopPropagation();
+  const clearFile = (event) => {
+    event.stopPropagation();
     setFile(null);
     if (inputRef.current) {
       inputRef.current.value = '';
     }
-    if (onUpload) {
-      onUpload(null);
-    }
+    onUpload?.(null);
   };
 
   return (
     <div className="file-upload-wrapper">
       {label && <label className="label">{label}</label>}
-      <div 
+      <div
         className={`file-upload-area ${dragActive ? 'drag-active' : ''} ${file ? 'has-file' : ''}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -62,14 +54,8 @@ const FileUpload = ({ accept, onUpload, label, description }) => {
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
       >
-        <input
-          ref={inputRef}
-          type="file"
-          accept={accept}
-          onChange={handleChange}
-          style={{ display: 'none' }}
-        />
-        
+        <input ref={inputRef} type="file" accept={accept} onChange={handleChange} style={{ display: 'none' }} />
+
         {!file ? (
           <div className="upload-prompt">
             <UploadCloud size={48} className="upload-icon" />
